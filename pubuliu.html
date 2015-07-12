@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>新浪财经前端模板</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="keywords" content="" />
+        <meta name="description" content="" />
+        <meta name="viewport" content="1020" />
+        <link rel="stylesheet" href="css/style.css" />
+        <link rel="apple-touch-icon" href="img/touchicon.png" />
+        <style type="text/css">
+			.wrap{width: 1200px;margin: 0 auto;padding:20px 20px;background-color:gray;}
+			.imgContent{width: 1000px;margin:0 auto}
+			.picWrap{width:1000px;padding:10px;background: #fff;}
+			.picshow{width: 1000px;}
+			
+			.picshow img{width: 100%;}
+			.picshow span{color:red;}
+        </style>
+    </head>
+    <body>
+        <!-- 内容区域 start -->
+		<div class="header">
+			header content...
+		</div>
+		<div class="wrap">
+			<div id="imgContent" class="imgContent">
+
+			</div>
+		</div>
+		<div class="footer">
+			footer content...
+		</div>
+        <!-- 内容区域 end -->
+        <script src="js/main.js" type="text/javascript"></script>
+        <script type="text/javascript">
+        	(function(host){
+        		var imgContent = document.getElementById("imgContent");
+        		var tmp = "<div class='picshow'><a href='@inpic@' title='@alt@'><img src='@imgurl@' alt='@alt@'/></a><p>@pictitle@(<span>@picnum@</span>)</p></div>";
+        		var totalpage = 0;
+        		/*http://platform.sina.com.cn/slide/album_photo_col?app_key=1985696825&page=@num@&photo_col_id=13&tags=cat&tagmode=any&format=json&jsoncallback=*/
+        		function loadscript(url,num){
+
+        			var tmpurl = url.replace("@num@",num);
+
+        			var head = document.getElementsByTagName("head")[0];
+        			var script = document.createElement('script');
+        			script.type="text/javascript";
+        			script.src = tmpurl + "jsonhandle";
+                    console.log(tmpurl+"jsonhandle");
+        			head.appendChild(script);
+
+        			if(script.addEventListener){
+        				script.addEventListener("load",function(){
+        					head.removeChild(script);
+        					head = null;
+        				},false);
+        			}else if(script.attachEvent){
+        					script.onreadystatechange = function(){
+        						if(script.readyState == 'loaded' || script.readyState == 'complete'){
+        							head.removeChild(script);
+        							head = null;
+        						}
+        					}
+        			}
+
+        		}
+        		/*jsonp-end*/
+        		var url = "http://platform.sina.com.cn/slide/album_photo_col?app_key=1985696825&page=@num@&photo_col_id=13&tags=cat&tagmode=any&format=json&jsoncallback=";
+
+        		loadscript(url,'1');
+
+        		host.jsonhandle = function(data){
+        			totalpage = Math.ceil(data.total/30);
+        			var picWrap = document.createElement("div");
+        			picWrap.setAttribute("id",data.page);
+        			var html = '';
+        			picWrap.className = "picWrap";
+        			for(var i = 0;i < data.data.length;i ++){
+        				html += tmp.replace(/@imgurl@/g,data.data[i].img_url).replace(/@alt@/g,data.data[i].name).replace(/@inpic@/g,data.data[i].url).replace(/@pictitle@/g,data.data[i].short_intro).replace(/@picnum@/,data.data[i].img_count)
+        			}
+        			picWrap.innerHTML = html;
+        			imgContent.appendChild(picWrap);
+        		}
+        		host.onscroll = function(){
+        			var a = Math.max(document.documentElement.scrollHeight,document.documentElement.clientHeight); //页面总高度
+        			var b = document.documentElement.clientHeight;
+        			var c = document.body.scrollTop;//document.documentElement.scrollTop在chorme下为0
+        			console.log(a);
+        			console.log(b);
+        			console.log(c);
+        			//alert(imgContent.lastChild.id);//imgContent的第一个子节点是 text 文本节点。。。。
+        			if(b + c == a){
+        				//showMoreImg();
+        				var page = parseInt(imgContent.lastChild.id)+1;
+        				
+        				if(page > totalpage){
+        					alert("没有图片了");
+        				}else{
+        					loadscript(url,page+'');
+        				}
+        			}
+        		};
+        	})(window)
+        </script>
+    </body>
+</html>
